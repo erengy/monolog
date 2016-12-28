@@ -71,7 +71,7 @@ private:
   const char* LevelString(const Level level) const;
 
   void WriteToConsole(const std::string& text) const;
-  void WriteToDebugOutput(const std::string& text) const;
+  void WriteToDebugger(const std::string& text) const;
   void WriteToFile(const std::string& text) const;
 
   Level level_ = Level::Debug;

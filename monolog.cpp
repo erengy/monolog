@@ -81,7 +81,7 @@ void Log::Write(const Level level, const Record& record, const Source& source) {
   if (level >= level_) {
     const auto output = Format(record, source);
     WriteToConsole(output);
-    WriteToDebugOutput(output);
+    WriteToDebugger(output);
     WriteToFile(output);
   }
 }
@@ -160,7 +160,7 @@ void Log::WriteToConsole(const std::string& text) const {
   std::cout << text;
 }
 
-void Log::WriteToDebugOutput(const std::string& text) const {
+void Log::WriteToDebugger(const std::string& text) const {
 #if defined(_DEBUG) && defined(_WIN32)
   ::OutputDebugStringA(text.c_str());
 #endif
