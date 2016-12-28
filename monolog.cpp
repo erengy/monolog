@@ -80,10 +80,25 @@ void Log::Write(const Level level, const Record& record, const Source& source) {
 
   if (level >= level_) {
     const auto output = Format(level, source, record);
-    WriteToConsole(output);
-    WriteToDebugger(output);
-    WriteToFile(output);
+    if (console_output_)
+      WriteToConsole(output);
+    if (debugger_output_)
+      WriteToDebugger(output);
+    if (file_output_)
+      WriteToFile(output);
   }
+}
+
+void Log::enable_console_output(const bool enabled) {
+  console_output_ = enabled;
+}
+
+void Log::enable_debugger_output(const bool enabled) {
+  debugger_output_ = enabled;
+}
+
+void Log::enable_file_output(const bool enabled) {
+  file_output_ = enabled;
 }
 
 void Log::set_level(const Level level) {

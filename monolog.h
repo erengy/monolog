@@ -63,6 +63,10 @@ class Log {
 public:
   void Write(const Level level, const Record& record, const Source& source);
 
+  void enable_console_output(const bool enabled);
+  void enable_debugger_output(const bool enabled);
+  void enable_file_output(const bool enabled);
+
   void set_level(const Level level);
   void set_path(const std::string& path);
 
@@ -77,6 +81,10 @@ private:
   Level level_ = Level::Debug;
   std::mutex mutex_;
   std::string path_;
+
+  bool console_output_ = true;
+  bool debugger_output_ = true;
+  bool file_output_ = true;
 };
 
 extern Log log;
