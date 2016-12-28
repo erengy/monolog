@@ -108,7 +108,7 @@ std::string Log::Format(std::string text, const Source& source) const {
     using system_clock = std::chrono::system_clock;
     const auto now = system_clock::to_time_t(system_clock::now());
     std::tm tm = {};
-    gmtime_s(&tm, &now);
+    localtime_s(&tm, &now);
     std::stringstream ss;
     ss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
     return ss.str();
