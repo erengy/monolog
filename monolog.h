@@ -67,7 +67,7 @@ public:
   void set_path(const std::string& path);
 
 private:
-  std::string Format(std::string text, const Source& source) const;
+  std::string Format(const Level level, const Source& source, std::string text) const;
   const char* LevelString(const Level level) const;
 
   void WriteToConsole(const std::string& text) const;

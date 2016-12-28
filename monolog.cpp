@@ -79,7 +79,7 @@ void Log::Write(const Level level, const Record& record, const Source& source) {
   std::lock_guard<std::mutex> lock(mutex_);
 
   if (level >= level_) {
-    const auto output = Format(record, source);
+    const auto output = Format(level, source, record);
     WriteToConsole(output);
     WriteToDebugger(output);
     WriteToFile(output);
@@ -96,7 +96,8 @@ void Log::set_path(const std::string& path) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-std::string Log::Format(std::string text, const Source& source) const {
+std::string Log::Format(const Level level, const Source& source,
+                        std::string text) const {
   auto trim_right = [](std::string& str, const std::string& chars) {
     const auto pos = str.find_last_not_of(chars);
     if (pos != std::string::npos && pos + 1 < str.size()) {
@@ -128,7 +129,7 @@ std::string Log::Format(std::string text, const Source& source) const {
 
   auto snprintf = [&](char* buffer, size_t buf_size) {
     return std::snprintf(buffer, buf_size, format,
-                         datetime.c_str(), LevelString(level_),
+                         datetime.c_str(), LevelString(level),
                          filename.c_str(), source.line, source.function.c_str(),
                          text.c_str());
   };
