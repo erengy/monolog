@@ -44,21 +44,65 @@ Log log;
 
 ////////////////////////////////////////////////////////////////////////////////
 
+namespace util {
+
+std::string get_datetime(const char* format) {
+  using system_clock = std::chrono::system_clock;
+  const auto now = system_clock::to_time_t(system_clock::now());
+
+  std::tm tm = {};
+  localtime_s(&tm, &now);
+
+  std::stringstream ss;
+  ss << std::put_time(&tm, format);
+
+  return ss.str();
+};
+
+std::string get_filename(const std::string& path) {
+  return path.substr(path.find_last_of("/\\") + 1);
+};
+
+std::string to_string(const std::wstring& str) {
+#ifdef _WIN32
+  if (!str.empty()) {
+    auto length = ::WideCharToMultiByte(CP_UTF8, 0, str.c_str(), -1,
+                                        nullptr, 0, nullptr, nullptr);
+    if (length > 0) {
+      std::string output(length, '\0');
+      ::WideCharToMultiByte(CP_UTF8, 0, str.c_str(), -1,
+                            &output[0], length, nullptr, nullptr);
+      return output;
+    }
+  }
+#else
+  std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+  try {
+    return converter.to_bytes(str);
+  } catch (const std::range_error&) {
+    return std::string(str.begin(), str.end());
+  }
+#endif
+  return std::string();
+}
+
+void trim_right(std::string& str, const std::string& chars) {
+  const auto pos = str.find_last_not_of(chars);
+  if (pos != std::string::npos && pos + 1 < str.size()) {
+    str.resize(pos + 1);
+  }
+}
+
+}  // namespace util
+
+////////////////////////////////////////////////////////////////////////////////
+
 Record::Record(const std::string& text)
     : text_(text) {
 }
 
-Record::Record(const std::wstring& text) {
-  auto to_string = [](const std::wstring& str) {
-    static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-    try {
-      return converter.to_bytes(str);
-    } catch (const std::range_error&) {
-      return std::string(str.begin(), str.end());
-    }
-  };
-
-  text_ = to_string(text);
+Record::Record(const std::wstring& text)
+    : text_(util::to_string(text)) {
 }
 
 Record::Record(const char* text)
@@ -113,32 +157,11 @@ void Log::set_path(const std::string& path) {
 
 std::string Log::Format(const Level level, const Source& source,
                         std::string text) const {
-  auto trim_right = [](std::string& str, const std::string& chars) {
-    const auto pos = str.find_last_not_of(chars);
-    if (pos != std::string::npos && pos + 1 < str.size()) {
-      str.resize(pos + 1);
-    }
-  };
-
-  auto get_datetime = []() {
-    using system_clock = std::chrono::system_clock;
-    const auto now = system_clock::to_time_t(system_clock::now());
-    std::tm tm = {};
-    localtime_s(&tm, &now);
-    std::stringstream ss;
-    ss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
-    return ss.str();
-  };
-
-  auto get_filename = [](const std::string& path) {
-    return path.substr(path.find_last_of("/\\") + 1);
-  };
-
-  trim_right(text, "\r\n");
+  util::trim_right(text, "\r\n");
   const bool multiline = text.find_first_of("\r\n") != std::string::npos;
 
-  const auto datetime = get_datetime();
-  const auto filename = get_filename(source.file);
+  const auto datetime = util::get_datetime("%Y-%m-%d %H:%M:%S");
+  const auto filename = util::get_filename(source.file);
   const auto format = !multiline ? "%s [%s] %s:%d %s | %s\n" :
                                    "%s [%s] %s:%d %s | >>\n%s\n";
 
