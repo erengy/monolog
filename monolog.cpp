@@ -87,13 +87,6 @@ std::string to_string(const std::wstring& str) {
   return std::string();
 }
 
-void trim_right(std::string& str, const std::string& chars) {
-  const auto pos = str.find_last_not_of(chars);
-  if (pos != std::string::npos && pos + 1 < str.size()) {
-    str.resize(pos + 1);
-  }
-}
-
 }  // namespace util
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -158,13 +151,12 @@ void Log::set_path(const std::string& path) {
 
 std::string Log::Format(const Level level, const Source& source,
                         std::string text) const {
-  util::trim_right(text, "\r\n");
   const bool multiline = text.find_first_of("\r\n") != std::string::npos;
+  const auto format = !multiline ? "%s [%s] %s:%d %s | %s\n" :
+                                   "%s [%s] %s:%d %s | >>\n%s\n";
 
   const auto datetime = util::get_datetime("%Y-%m-%d %H:%M:%S");
   const auto filename = util::get_filename(source.file);
-  const auto format = !multiline ? "%s [%s] %s:%d %s | %s\n" :
-                                   "%s [%s] %s:%d %s | >>\n%s\n";
 
   auto snprintf = [&](char* buffer, size_t buf_size) {
     return std::snprintf(buffer, buf_size, format,
