@@ -66,12 +66,13 @@ std::string get_filename(const std::string& path) {
 std::string to_string(const std::wstring& str) {
 #ifdef _WIN32
   if (!str.empty()) {
-    auto length = ::WideCharToMultiByte(CP_UTF8, 0, str.c_str(), -1,
-                                        nullptr, 0, nullptr, nullptr);
+    const auto length = ::WideCharToMultiByte(CP_UTF8, 0, str.c_str(), -1,
+                                              nullptr, 0, nullptr, nullptr);
     if (length > 0) {
       std::string output(length, '\0');
       ::WideCharToMultiByte(CP_UTF8, 0, str.c_str(), -1,
                             &output[0], length, nullptr, nullptr);
+      output.pop_back();
       return output;
     }
   }
