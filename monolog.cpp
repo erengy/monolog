@@ -233,17 +233,31 @@ void Log::WriteToDebugger(const std::string& text) const {
 }
 
 void Log::WriteToFile(const std::string& text) const {
-  if (path_.empty()) {
+  if (path_.empty())
     return;
-  }
 
-  std::ofstream stream;
-  stream.open(path_, std::ofstream::app | std::ios::binary | std::ofstream::out);
+#ifdef _WIN32
+  HANDLE file_handle = ::CreateFileW(util::to_utf16(path_).c_str(),
+      FILE_APPEND_DATA, FILE_SHARE_READ, nullptr, OPEN_ALWAYS,
+      FILE_ATTRIBUTE_NORMAL, nullptr);
 
-  if (stream.is_open()) {
-    stream.write(text.c_str(), text.size());
-    stream.close();
+  if (file_handle == INVALID_HANDLE_VALUE)
+    return;
+
+  const auto file_pointer = ::SetFilePointer(file_handle, 0, nullptr, FILE_END);
+  if (file_pointer == INVALID_SET_FILE_POINTER)
+    return;
+
+  DWORD bytes_written = 0;
+  ::WriteFile(file_handle, text.data(), text.size(), &bytes_written, nullptr);
+  ::CloseHandle(file_handle);
+#else
+  std::ofstream file{path_, std::ios::out | std::ios::binary | std::ios::app};
+
+  if (file) {
+    file.write(text.c_str(), text.size());
   }
+#endif
 }
 
 }  // namespace monolog
