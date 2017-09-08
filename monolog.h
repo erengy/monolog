@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2016 Eren Okka
+Copyright (c) 2016-2017 Eren Okka
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -69,6 +69,7 @@ public:
 
   void set_level(const Level level);
   void set_path(const std::string& path);
+  void set_path(const std::wstring& path);
 
 private:
   std::string Format(const Level level, const Source& source, std::string text) const;

@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2016 Eren Okka
+Copyright (c) 2016-2017 Eren Okka
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -145,6 +145,10 @@ void Log::set_level(const Level level) {
 
 void Log::set_path(const std::string& path) {
   path_ = path;
+}
+
+void Log::set_path(const std::wstring& path) {
+  path_ = util::to_string(path);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
