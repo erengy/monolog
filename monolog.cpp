@@ -63,17 +63,19 @@ std::string get_filename(const std::string& path) {
   return path.substr(path.find_last_of("/\\") + 1);
 };
 
-std::string to_string(const std::wstring& str) {
+std::string to_utf8(const std::wstring& str) {
 #ifdef _WIN32
+  auto wide_char_to_multi_byte = [&str](LPSTR output, int size) -> int {
+    return ::WideCharToMultiByte(CP_UTF8, 0, str.c_str(), str.size(),
+                                 output, size, nullptr, nullptr);
+  };
+
   if (!str.empty()) {
-    const auto length = ::WideCharToMultiByte(CP_UTF8, 0, str.c_str(), -1,
-                                              nullptr, 0, nullptr, nullptr);
-    if (length > 0) {
-      std::string output(length, '\0');
-      ::WideCharToMultiByte(CP_UTF8, 0, str.c_str(), -1,
-                            &output[0], length, nullptr, nullptr);
-      output.pop_back();
-      return output;
+    const int size = wide_char_to_multi_byte(nullptr, 0);
+    if (size > 0) {
+      std::string output(size, '\0');
+      if (wide_char_to_multi_byte(&output.front(), size))
+        return output;
     }
   }
 #else
@@ -84,7 +86,35 @@ std::string to_string(const std::wstring& str) {
     return std::string(str.begin(), str.end());
   }
 #endif
-  return std::string();
+
+  return {};
+}
+
+std::wstring to_utf16(const std::string& str) {
+#ifdef _WIN32
+  auto multi_byte_to_wide_char = [&str](LPWSTR output, int size) -> int {
+    return ::MultiByteToWideChar(CP_UTF8, 0, str.c_str(), str.size(),
+                                 output, size);
+  };
+
+  if (!str.empty()) {
+    const int size = multi_byte_to_wide_char(nullptr, 0);
+    if (size > 0) {
+      std::wstring output(size, '\0');
+      if (multi_byte_to_wide_char(&output.front(), size))
+        return output;
+    }
+  }
+#else
+  std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+  try {
+    return converter.from_bytes(str);
+  } catch (const std::range_error&) {
+    return std::wstring(str.begin(), str.end());
+  }
+#endif
+
+  return {};
 }
 
 }  // namespace util
@@ -96,7 +126,7 @@ Record::Record(const std::string& text)
 }
 
 Record::Record(const std::wstring& text)
-    : text_(util::to_string(text)) {
+    : text_(util::to_utf8(text)) {
 }
 
 Record::Record(const char* text)
@@ -148,7 +178,7 @@ void Log::set_path(const std::string& path) {
 }
 
 void Log::set_path(const std::wstring& path) {
-  path_ = util::to_string(path);
+  path_ = util::to_utf8(path);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
