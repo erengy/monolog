@@ -48,10 +48,10 @@ struct Source {
 
 class Record {
 public:
-  Record(const std::string& text);
-  Record(const std::wstring& text);
-  Record(const char* text);
-  Record(const wchar_t* text);
+  explicit Record(const std::string& text);
+  explicit Record(const std::wstring& text);
+  explicit Record(const char* text);
+  explicit Record(const wchar_t* text);
 
   operator std::string() const;
 
@@ -93,7 +93,7 @@ extern Log log;
 }  // namespace monolog
 
 #define MONOLOG(level, text) \
-    monolog::log.Write(level, text, {__FILE__, __FUNCTION__, __LINE__})
+    monolog::log.Write(level, monolog::Record{text}, monolog::Source{__FILE__, __FUNCTION__, __LINE__})
 
 #define LOG_DEBUG(text)   MONOLOG(monolog::Level::Debug, text)
 #define LOG_INFO(text)    MONOLOG(monolog::Level::Informational, text)
