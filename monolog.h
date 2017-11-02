@@ -95,12 +95,7 @@ extern Log log;
 #define MONOLOG(level, text) \
     monolog::log.Write(level, monolog::Record{text}, monolog::Source{__FILE__, __FUNCTION__, __LINE__})
 
-#define LOG_DEBUG(text)   MONOLOG(monolog::Level::Debug, text)
-#define LOG_INFO(text)    MONOLOG(monolog::Level::Informational, text)
-#define LOG_WARNING(text) MONOLOG(monolog::Level::Warning, text)
-#define LOG_ERROR(text)   MONOLOG(monolog::Level::Error, text)
-
-#define LOGD(text) LOG_DEBUG(text)
-#define LOGI(text) LOG_INFO(text)
-#define LOGW(text) LOG_WARNING(text)
-#define LOGE(text) LOG_ERROR(text)
+#define MONOLOG_DEBUG(text)   MONOLOG(monolog::Level::Debug, text)
+#define MONOLOG_INFO(text)    MONOLOG(monolog::Level::Informational, text)
+#define MONOLOG_WARNING(text) MONOLOG(monolog::Level::Warning, text)
+#define MONOLOG_ERROR(text)   MONOLOG(monolog::Level::Error, text)

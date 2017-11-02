@@ -5,8 +5,11 @@
 ## Example
 
 ```cpp
-#include <iostream>
 #include <monolog/monolog.h>
+
+#define LOGD MONOLOG_DEBUG
+#define LOGW MONOLOG_WARNING
+#define LOGE MONOLOG_ERROR
 
 int main() {
   monolog::log.set_level(monolog::Level::Debug);
@@ -21,9 +24,9 @@ int main() {
 ```
 
 ```
-2016-12-28 21:58:48 [Debug] test.cpp:8 main | This is a debug message.
-2016-12-28 21:58:48 [Warning] test.cpp:9 main | This is a warning.
-2016-12-28 21:58:48 [Error] test.cpp:10 main | This is an error.
+2016-12-28 21:58:48 [Debug] test.cpp:11 main | This is a debug message.
+2016-12-28 21:58:48 [Warning] test.cpp:12 main | This is a warning.
+2016-12-28 21:58:48 [Error] test.cpp:13 main | This is an error.
 ```
 
 ## License
