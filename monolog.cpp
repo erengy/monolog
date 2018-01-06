@@ -241,16 +241,17 @@ void Log::WriteToFile(const std::string& text) const {
       FILE_APPEND_DATA, FILE_SHARE_READ, nullptr, OPEN_ALWAYS,
       FILE_ATTRIBUTE_NORMAL, nullptr);
 
-  if (file_handle == INVALID_HANDLE_VALUE)
-    return;
+  if (file_handle != INVALID_HANDLE_VALUE) {
+    const auto file_pointer = ::SetFilePointer(file_handle, 0, nullptr,
+                                               FILE_END);
+    if (file_pointer != INVALID_SET_FILE_POINTER) {
+      DWORD bytes_written = 0;
+      ::WriteFile(file_handle, text.data(), text.size(), &bytes_written,
+                  nullptr);
+    }
 
-  const auto file_pointer = ::SetFilePointer(file_handle, 0, nullptr, FILE_END);
-  if (file_pointer == INVALID_SET_FILE_POINTER)
-    return;
-
-  DWORD bytes_written = 0;
-  ::WriteFile(file_handle, text.data(), text.size(), &bytes_written, nullptr);
-  ::CloseHandle(file_handle);
+    ::CloseHandle(file_handle);
+  }
 #else
   std::ofstream file{path_, std::ios::out | std::ios::binary | std::ios::app};
 
