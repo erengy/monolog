@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2016-2017 Eren Okka
+Copyright (c) 2016-2018 Eren Okka
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -68,6 +68,7 @@ public:
   void enable_file_output(const bool enabled);
 
   void set_level(const Level level);
+  void set_newline(const std::string& newline);
   void set_path(const std::string& path);
   void set_path(const std::wstring& path);
 
@@ -81,6 +82,7 @@ private:
 
   Level level_ = Level::Debug;
   std::mutex mutex_;
+  std::string newline_ = "\n";
   std::string path_;
 
   bool console_output_ = true;

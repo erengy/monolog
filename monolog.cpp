@@ -1,7 +1,7 @@
 /*
 MIT License
 
-Copyright (c) 2016-2017 Eren Okka
+Copyright (c) 2016-2018 Eren Okka
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -173,6 +173,10 @@ void Log::set_level(const Level level) {
   level_ = level;
 }
 
+void Log::set_newline(const std::string& newline) {
+  newline_ = newline;
+}
+
 void Log::set_path(const std::string& path) {
   path_ = path;
 }
@@ -186,14 +190,15 @@ void Log::set_path(const std::wstring& path) {
 std::string Log::Format(const Level level, const Source& source,
                         std::string text) const {
   const bool multiline = text.find_first_of("\r\n") != std::string::npos;
-  const auto format = !multiline ? "%s [%s] %s:%d %s | %s\n" :
-                                   "%s [%s] %s:%d %s | >>\n%s\n";
+  const auto format = !multiline ?
+      "%s [%s] %s:%d %s | %s" + newline_ :
+      "%s [%s] %s:%d %s | >>" + newline_ + "%s" + newline_;
 
   const auto datetime = util::get_datetime("%Y-%m-%d %H:%M:%S");
   const auto filename = util::get_filename(source.file);
 
   auto snprintf = [&](char* buffer, size_t buf_size) {
-    return std::snprintf(buffer, buf_size, format,
+    return std::snprintf(buffer, buf_size, format.c_str(),
                          datetime.c_str(), LevelString(level),
                          filename.c_str(), source.line, source.function.c_str(),
                          text.c_str());
