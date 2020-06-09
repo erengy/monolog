@@ -16,10 +16,6 @@
 
 namespace monolog {
 
-Log log;
-
-////////////////////////////////////////////////////////////////////////////////
-
 namespace util {
 
 std::string get_datetime(const char* format) {

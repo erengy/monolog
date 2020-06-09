@@ -66,7 +66,7 @@ private:
   bool file_output_ = true;
 };
 
-extern Log log;
+inline Log log;
 
 }  // namespace monolog
 
