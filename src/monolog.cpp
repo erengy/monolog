@@ -12,7 +12,7 @@
 #include <windows.h>
 #endif
 
-#include "monolog.h"
+#include <monolog.hpp>
 
 namespace monolog {
 
