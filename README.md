@@ -5,7 +5,7 @@
 ## Example
 
 ```cpp
-#include <monolog/monolog.h>
+#include <monolog.hpp>
 
 #define LOGD MONOLOG_DEBUG
 #define LOGW MONOLOG_WARNING
@@ -31,4 +31,4 @@ int main() {
 
 ## License
 
-*Monolog* is licensed under the [MIT License](https://opensource.org/licenses/MIT).
+Licensed under the [MIT License](https://opensource.org/licenses/MIT).
