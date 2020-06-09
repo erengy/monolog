@@ -18,7 +18,7 @@ namespace monolog {
 
 namespace util {
 
-std::string get_datetime(const char* format) {
+std::string get_datetime(const std::string_view format) {
   using system_clock = std::chrono::system_clock;
   const auto now = system_clock::to_time_t(system_clock::now());
 
@@ -26,19 +26,19 @@ std::string get_datetime(const char* format) {
   localtime_s(&tm, &now);
 
   std::stringstream ss;
-  ss << std::put_time(&tm, format);
+  ss << std::put_time(&tm, format.data());
 
   return ss.str();
 };
 
-std::string get_filename(const std::string& path) {
-  return path.substr(path.find_last_of("/\\") + 1);
+std::string get_filename(const std::string_view path) {
+  return std::string{path.substr(path.find_last_of("/\\") + 1)};
 };
 
-std::string to_utf8(const std::wstring& str) {
+std::string to_utf8(const std::wstring_view str) {
 #ifdef _WIN32
-  auto wide_char_to_multi_byte = [&str](LPSTR output, int size) -> int {
-    return ::WideCharToMultiByte(CP_UTF8, 0, str.c_str(), str.size(),
+  const auto wide_char_to_multi_byte = [&str](LPSTR output, int size) {
+    return ::WideCharToMultiByte(CP_UTF8, 0, str.data(), str.size(),
                                  output, size, nullptr, nullptr);
   };
 
@@ -62,10 +62,10 @@ std::string to_utf8(const std::wstring& str) {
   return {};
 }
 
-std::wstring to_utf16(const std::string& str) {
+std::wstring to_utf16(const std::string_view str) {
 #ifdef _WIN32
-  auto multi_byte_to_wide_char = [&str](LPWSTR output, int size) -> int {
-    return ::MultiByteToWideChar(CP_UTF8, 0, str.c_str(), str.size(),
+  const auto multi_byte_to_wide_char = [&str](LPWSTR output, int size) {
+    return ::MultiByteToWideChar(CP_UTF8, 0, str.data(), str.size(),
                                  output, size);
   };
 
@@ -93,33 +93,25 @@ std::wstring to_utf16(const std::string& str) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Record::Record(const std::string& text)
-    : text_(text) {
+Record::Record(const std::string_view text)
+    : text_{text} {
 }
 
-Record::Record(const std::wstring& text)
-    : text_(util::to_utf8(text)) {
+Record::Record(const std::wstring_view text)
+    : text_{util::to_utf8(text)} {
 }
 
-Record::Record(const char* text)
-    : Record(std::string(text)) {
-}
-
-Record::Record(const wchar_t* text)
-    : Record(std::wstring(text)) {
-}
-
-Record::operator std::string() const {
+const std::string& Record::to_string() const {
   return text_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void Log::Write(const Level level, const Record& record, const Source& source) {
-  std::lock_guard<std::mutex> lock(mutex_);
+  std::lock_guard lock{mutex_};
 
   if (level >= level_) {
-    const auto output = Format(level, source, record);
+    const auto output = Format(level, record, source);
     if (console_output_)
       WriteToConsole(output);
     if (debugger_output_)
@@ -145,23 +137,25 @@ void Log::set_level(const Level level) {
   level_ = level;
 }
 
-void Log::set_newline(const std::string& newline) {
+void Log::set_newline(const std::string_view newline) {
   newline_ = newline;
 }
 
-void Log::set_path(const std::string& path) {
+void Log::set_path(const std::string_view path) {
   path_ = path;
 }
 
-void Log::set_path(const std::wstring& path) {
+void Log::set_path(const std::wstring_view path) {
   path_ = util::to_utf8(path);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-std::string Log::Format(const Level level, const Source& source,
-                        std::string text) const {
-  const bool multiline = text.find_first_of("\r\n") != std::string::npos;
+std::string Log::Format(const Level level, const Record& record,
+                        const Source& source) const {
+  const auto& text = record.to_string();
+
+  const bool multiline = text.find_first_of("\r\n") != text.npos;
   const auto format = !multiline ?
       "%s [%s] %s:%d %s | %s" + newline_ :
       "%s [%s] %s:%d %s | >>" + newline_ + "%s" + newline_;
@@ -169,7 +163,7 @@ std::string Log::Format(const Level level, const Source& source,
   const auto datetime = util::get_datetime("%Y-%m-%d %H:%M:%S");
   const auto filename = util::get_filename(source.file);
 
-  auto snprintf = [&](char* buffer, size_t buf_size) {
+  const auto snprintf = [&](char* buffer, size_t buf_size) {
     return std::snprintf(buffer, buf_size, format.c_str(),
                          datetime.c_str(), LevelString(level),
                          filename.c_str(), source.line, source.function.c_str(),
@@ -185,7 +179,7 @@ std::string Log::Format(const Level level, const Source& source,
 }
 
 const char* Log::LevelString(const Level level) const {
-  static const std::array<char*, 8> levels = {
+  static const std::array<const char*, 8> levels = {
     "Debug",
     "Informational",
     "Notice",
