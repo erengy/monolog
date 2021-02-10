@@ -38,8 +38,9 @@ std::string get_filename(const std::string_view path) {
 std::string to_utf8(const std::wstring_view str) {
 #ifdef _WIN32
   const auto wide_char_to_multi_byte = [&str](LPSTR output, int size) {
-    return ::WideCharToMultiByte(CP_UTF8, 0, str.data(), str.size(),
-                                 output, size, nullptr, nullptr);
+    return ::WideCharToMultiByte(CP_UTF8, 0, str.data(),
+                                 static_cast<int>(str.size()), output, size,
+                                 nullptr, nullptr);
   };
 
   if (!str.empty()) {
@@ -65,8 +66,8 @@ std::string to_utf8(const std::wstring_view str) {
 std::wstring to_utf16(const std::string_view str) {
 #ifdef _WIN32
   const auto multi_byte_to_wide_char = [&str](LPWSTR output, int size) {
-    return ::MultiByteToWideChar(CP_UTF8, 0, str.data(), str.size(),
-                                 output, size);
+    return ::MultiByteToWideChar(CP_UTF8, 0, str.data(),
+                                 static_cast<int>(str.size()), output, size);
   };
 
   if (!str.empty()) {
@@ -217,8 +218,8 @@ void Log::WriteToFile(const std::string& text) const {
                                                FILE_END);
     if (file_pointer != INVALID_SET_FILE_POINTER) {
       DWORD bytes_written = 0;
-      ::WriteFile(file_handle, text.data(), text.size(), &bytes_written,
-                  nullptr);
+      ::WriteFile(file_handle, text.data(), static_cast<DWORD>(text.size()),
+                  &bytes_written, nullptr);
     }
 
     ::CloseHandle(file_handle);
