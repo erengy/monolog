@@ -1,18 +1,17 @@
+#include "monolog.hpp"
+
 #include <array>
 #include <chrono>
-#include <codecvt>
 #include <cstdio>
 #include <ctime>
-#include <iostream>
-#include <iomanip>
 #include <fstream>
+#include <iomanip>
+#include <iostream>
 #include <sstream>
 
 #ifdef _WIN32
 #include <windows.h>
 #endif
-
-#include <monolog.hpp>
 
 namespace monolog {
 
@@ -35,35 +34,7 @@ std::string get_filename(const std::string_view path) {
   return std::string{path.substr(path.find_last_of("/\\") + 1)};
 };
 
-std::string to_utf8(const std::wstring_view str) {
-#ifdef _WIN32
-  const auto wide_char_to_multi_byte = [&str](LPSTR output, int size) {
-    return ::WideCharToMultiByte(CP_UTF8, 0, str.data(),
-                                 static_cast<int>(str.size()), output, size,
-                                 nullptr, nullptr);
-  };
-
-  if (!str.empty()) {
-    const int size = wide_char_to_multi_byte(nullptr, 0);
-    if (size > 0) {
-      std::string output(size, '\0');
-      if (wide_char_to_multi_byte(&output.front(), size))
-        return output;
-    }
-  }
-#else
-  std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-  try {
-    return converter.to_bytes(str);
-  } catch (const std::range_error&) {
-    return std::string(str.begin(), str.end());
-  }
-#endif
-
-  return {};
-}
-
-std::wstring to_utf16(const std::string_view str) {
+std::wstring to_wstring(const std::string_view str) {
 #ifdef _WIN32
   const auto multi_byte_to_wide_char = [&str](LPWSTR output, int size) {
     return ::MultiByteToWideChar(CP_UTF8, 0, str.data(),
@@ -78,13 +49,6 @@ std::wstring to_utf16(const std::string_view str) {
         return output;
     }
   }
-#else
-  std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-  try {
-    return converter.from_bytes(str);
-  } catch (const std::range_error&) {
-    return std::wstring(str.begin(), str.end());
-  }
 #endif
 
   return {};
@@ -96,10 +60,6 @@ std::wstring to_utf16(const std::string_view str) {
 
 Record::Record(const std::string_view text)
     : text_{text} {
-}
-
-Record::Record(const std::wstring_view text)
-    : text_{util::to_utf8(text)} {
 }
 
 const std::string& Record::to_string() const {
@@ -144,10 +104,6 @@ void Log::set_newline(const std::string_view newline) {
 
 void Log::set_path(const std::string_view path) {
   path_ = path;
-}
-
-void Log::set_path(const std::wstring_view path) {
-  path_ = util::to_utf8(path);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -209,7 +165,7 @@ void Log::WriteToFile(const std::string& text) const {
     return;
 
 #ifdef _WIN32
-  HANDLE file_handle = ::CreateFileW(util::to_utf16(path_).c_str(),
+  HANDLE file_handle = ::CreateFileW(util::to_wstring(path_).c_str(),
       FILE_APPEND_DATA, FILE_SHARE_READ, nullptr, OPEN_ALWAYS,
       FILE_ATTRIBUTE_NORMAL, nullptr);
 

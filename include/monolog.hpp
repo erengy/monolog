@@ -26,7 +26,6 @@ struct Source {
 class Record {
 public:
   explicit Record(const std::string_view text);
-  explicit Record(const std::wstring_view text);
 
   const std::string& to_string() const;
 
@@ -45,7 +44,6 @@ public:
   void set_level(const Level level);
   void set_newline(const std::string_view newline);
   void set_path(const std::string_view path);
-  void set_path(const std::wstring_view path);
 
 private:
   std::string Format(const Level level, const Record& record, const Source& source) const;
