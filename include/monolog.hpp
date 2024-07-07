@@ -35,7 +35,7 @@ private:
 
 class Log {
 public:
-  void Write(const Level level, const Record& record, const Source& source);
+  void write(const Level level, const Record& record, const Source& source);
 
   void enable_console_output(const bool enabled);
   void enable_debugger_output(const bool enabled);
@@ -46,12 +46,12 @@ public:
   void set_path(const std::string_view path);
 
 private:
-  std::string Format(const Level level, const Record& record, const Source& source) const;
-  const char* LevelString(const Level level) const;
+  std::string format(const Level level, const Record& record, const Source& source) const;
+  const char* to_level_string(const Level level) const;
 
-  void WriteToConsole(const std::string& text) const;
-  void WriteToDebugger(const std::string& text) const;
-  void WriteToFile(const std::string& text) const;
+  void write_to_console(const std::string& text) const;
+  void write_to_debugger(const std::string& text) const;
+  void write_to_file(const std::string& text) const;
 
   Level level_ = Level::Debug;
   std::mutex mutex_;
@@ -68,7 +68,7 @@ inline Log log;
 }  // namespace monolog
 
 #define MONOLOG(level, text) \
-    monolog::log.Write(level, monolog::Record{text}, monolog::Source{__FILE__, __FUNCTION__, __LINE__})
+    monolog::log.write(level, monolog::Record{text}, monolog::Source{__FILE__, __FUNCTION__, __LINE__})
 
 #define MONOLOG_DEBUG(text)   MONOLOG(monolog::Level::Debug, text)
 #define MONOLOG_INFO(text)    MONOLOG(monolog::Level::Informational, text)

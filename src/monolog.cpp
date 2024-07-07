@@ -68,17 +68,17 @@ const std::string& Record::to_string() const {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void Log::Write(const Level level, const Record& record, const Source& source) {
+void Log::write(const Level level, const Record& record, const Source& source) {
   std::lock_guard lock{mutex_};
 
   if (level >= level_) {
-    const auto output = Format(level, record, source);
+    const auto output = format(level, record, source);
     if (console_output_)
-      WriteToConsole(output);
+      write_to_console(output);
     if (debugger_output_)
-      WriteToDebugger(output);
+      write_to_debugger(output);
     if (file_output_)
-      WriteToFile(output);
+      write_to_file(output);
   }
 }
 
@@ -108,7 +108,7 @@ void Log::set_path(const std::string_view path) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-std::string Log::Format(const Level level, const Record& record,
+std::string Log::format(const Level level, const Record& record,
                         const Source& source) const {
   const auto& text = record.to_string();
 
@@ -122,7 +122,7 @@ std::string Log::Format(const Level level, const Record& record,
 
   const auto snprintf = [&](char* buffer, size_t buf_size) {
     return std::snprintf(buffer, buf_size, format.c_str(),
-                         datetime.c_str(), LevelString(level),
+                         datetime.c_str(), to_level_string(level),
                          filename.c_str(), source.line, source.function.c_str(),
                          text.c_str());
   };
@@ -135,7 +135,7 @@ std::string Log::Format(const Level level, const Record& record,
   return output;
 }
 
-const char* Log::LevelString(const Level level) const {
+const char* Log::to_level_string(const Level level) const {
   static const std::array<const char*, 8> levels = {
     "Debug",
     "Informational",
@@ -150,17 +150,17 @@ const char* Log::LevelString(const Level level) const {
   return levels[static_cast<size_t>(level)];
 }
 
-void Log::WriteToConsole(const std::string& text) const {
+void Log::write_to_console(const std::string& text) const {
   std::cout << text;
 }
 
-void Log::WriteToDebugger(const std::string& text) const {
+void Log::write_to_debugger(const std::string& text) const {
 #if defined(_DEBUG) && defined(_WIN32)
   ::OutputDebugStringA(text.c_str());
 #endif
 }
 
-void Log::WriteToFile(const std::string& text) const {
+void Log::write_to_file(const std::string& text) const {
   if (path_.empty())
     return;
 
