@@ -154,7 +154,7 @@ void Log::write_to_console(const std::string& text) const {
   std::cout << text;
 }
 
-void Log::write_to_debugger(const std::string& text) const {
+void Log::write_to_debugger([[maybe_unused]] const std::string& text) const {
 #if defined(_DEBUG) && defined(_WIN32)
   ::OutputDebugStringA(text.c_str());
 #endif
